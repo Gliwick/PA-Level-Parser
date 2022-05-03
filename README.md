@@ -13,7 +13,7 @@ cd C:\path\to\directory\of\jar\file
 java -jar pa-object-spacer.jar "C:\path\to\level\directory"
 ```
 
-this will create a 'level2.lsb` file in your level directory
+this will create a `level2.lsb` file in your level directory
 
 to apply new level file, rename `level.lsb` to something else and rename `level2.lsb` to `level.lsb`
 
