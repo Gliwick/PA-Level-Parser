@@ -13,7 +13,7 @@ public abstract class KeyframeBase {
 
 	@JsonProperty("t")
 	@JsonFormat(shape = Shape.STRING)
-	protected BigDecimal time;
+	protected BigDecimal time = BigDecimal.ZERO;
 
 	public enum EaseType {
 		Linear, Instant,

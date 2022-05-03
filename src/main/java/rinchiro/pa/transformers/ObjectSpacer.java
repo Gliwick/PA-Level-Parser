@@ -118,7 +118,7 @@ public class ObjectSpacer implements ObjectTransformer {
 								.orElse(BigDecimal.ZERO)
 								.add(preInterval);
 
-						Keyframe2D lastKeyframe = emptyKeyframe2D();
+						Keyframe2D lastKeyframe = new Keyframe2D();
 						lastKeyframe.setTime(fixedTimeOffset.max(lastKeyframeTime.add(new BigDecimal("0.001"))));
 						lastKeyframe.setEaseType(EaseType.Instant);
 						keyframes.add(lastKeyframe);
@@ -132,9 +132,9 @@ public class ObjectSpacer implements ObjectTransformer {
 					keyframes.add(0, keyframes.get(0));
 					break;
 				case SCALE:
-					keyframes.add(0, emptyKeyframe2D());
+					keyframes.add(0, new Keyframe2D());
 				case ROTATION:
-					keyframes.add(0, emptyKeyframe1D());
+					keyframes.add(0, new Keyframe1D());
 					break;
 				}
 			}
@@ -159,20 +159,5 @@ public class ObjectSpacer implements ObjectTransformer {
 			i += 1;
 		}
 		return objects;
-	}
-
-	private Keyframe1D emptyKeyframe1D() {
-		Keyframe1D kf = new Keyframe1D();
-		kf.setTime(BigDecimal.ZERO);
-		kf.setX(BigDecimal.ZERO);
-		return kf;
-	}
-
-	private Keyframe2D emptyKeyframe2D() {
-		Keyframe2D kf = new Keyframe2D();
-		kf.setTime(BigDecimal.ZERO);
-		kf.setX(BigDecimal.ZERO);
-		kf.setY(BigDecimal.ZERO);
-		return kf;
 	}
 }

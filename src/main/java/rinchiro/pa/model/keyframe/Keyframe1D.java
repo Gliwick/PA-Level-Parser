@@ -19,7 +19,7 @@ import lombok.EqualsAndHashCode;
 public class Keyframe1D extends KeyframeBase {
 
 	@JsonFormat(shape = Shape.STRING)
-	protected BigDecimal x;
+	protected BigDecimal x = BigDecimal.ZERO;
 	
 	@Override
 	public Keyframe1D copy() {
