@@ -1,0 +1,14 @@
+# IDE
+.settings/
+.classpath
+.project
+
+# build
+target/
+
+# Windows
+*.bak
+
+# warp bundle
+assembly/jdk/
+warp/

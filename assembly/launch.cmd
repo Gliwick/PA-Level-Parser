@@ -1,0 +1,1 @@
+%~dp0\jdk\bin\java -jar %~dp0\pa-object-spacer.jar %*
