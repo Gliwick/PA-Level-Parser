@@ -129,10 +129,14 @@ public class ObjectSpacer implements ObjectTransformer {
 				switch (type) {
 				case POSITION:
 				case COLOR:
-					keyframes.add(0, keyframes.get(0));
+					KeyframeBase newFirstKeyframe = firstKeyframe.copy();
+					newFirstKeyframe.setTime(BigDecimal.ZERO);
+					newFirstKeyframe.setEaseType(null);
+					keyframes.add(0, newFirstKeyframe);
 					break;
 				case SCALE:
 					keyframes.add(0, new Keyframe2D());
+					break;
 				case ROTATION:
 					keyframes.add(0, new Keyframe1D());
 					break;
