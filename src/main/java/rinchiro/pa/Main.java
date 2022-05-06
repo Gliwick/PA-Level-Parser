@@ -3,7 +3,7 @@ package rinchiro.pa;
 import java.math.BigDecimal;
 
 import lombok.extern.slf4j.Slf4j;
-import rinchiro.pa.transformers.ObjectSpacer;
+import rinchiro.pa.transformer.ObjectSpacer;
 
 @Slf4j
 public class Main {

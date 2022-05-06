@@ -1,7 +1,10 @@
 package rinchiro.pa.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.AllArgsConstructor;
@@ -26,7 +29,9 @@ public class LevelDescription {
 	@JsonProperty("level_data")
 	private LevelData levelData;
 	
-	private List<Prefab> prefabs;
+	@JsonInclude(Include.NON_EMPTY)
+	@Builder.Default
+	private List<Prefab> prefabs = new ArrayList<>();
 	
 	private List<Theme> themes;
 	

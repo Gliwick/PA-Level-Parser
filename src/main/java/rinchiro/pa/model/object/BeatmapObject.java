@@ -1,41 +1,40 @@
 package rinchiro.pa.model.object;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
+
+import org.apache.commons.lang3.RandomStringUtils;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import rinchiro.pa.model.Point;
-import rinchiro.pa.model.serializer.ListToStringSerializer;
 
 @Data
 @Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
 public class BeatmapObject {
+	
+	private static final int ID_LENGTH = 16;
 
+	@Builder.ObtainVia(method = "generateId")
 	private String id;
 
 	@JsonProperty("p")
 	private String parentId;
 
 	@JsonProperty("pt")
-	private String parentType;
+	private ParentType parentType;
 
 	@JsonProperty("po")
-	@JsonSerialize(using = ListToStringSerializer.class)
-	@Builder.ObtainVia(method = "copyParentOffset")
-	private List<BigDecimal> parentOffset;
+	private ParentOffset parentOffset;
 
 	@JsonProperty("pid")
 	private String prefabId;
@@ -89,10 +88,10 @@ public class BeatmapObject {
 	@Builder.ObtainVia(method = "copyEvents")
 	private Events events;
 
-	private List<BigDecimal> copyParentOffset() {
-		return parentOffset == null ? null : new ArrayList<BigDecimal>(parentOffset);
+	private String generateId() {
+		return RandomStringUtils.randomAscii(ID_LENGTH);
 	}
-
+	
 	private Point copyOrigin() {
 		return origin == null ? null : origin.toBuilder().build();
 	}

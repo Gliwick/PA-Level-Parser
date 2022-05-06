@@ -10,9 +10,12 @@ import lombok.Value;
 @Builder
 public class ParentType {
 
-	private boolean position;
-	private boolean scale;
-	private boolean rotation;
+	@Builder.Default
+	private boolean position = true;
+	@Builder.Default
+	private boolean scale = false;
+	@Builder.Default
+	private boolean rotation = true;
 
 	private static char toChar(boolean b) {
 		return b ? '1' : '0';

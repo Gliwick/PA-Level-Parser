@@ -14,7 +14,7 @@ import rinchiro.pa.model.LevelDescription;
 import rinchiro.pa.model.Prefab;
 import rinchiro.pa.model.serializer.BooleanDeserializer;
 import rinchiro.pa.model.serializer.BooleanSerializer;
-import rinchiro.pa.transformers.ObjectTransformer;
+import rinchiro.pa.transformer.ObjectTransformer;
 
 @Slf4j
 public class Level {
