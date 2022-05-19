@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,15 +18,15 @@ import lombok.NoArgsConstructor;
 import rinchiro.pa.model.Point;
 
 @Data
-@Builder(toBuilder = true)
+@Builder(toBuilder = true, access = AccessLevel.PRIVATE)
 @NoArgsConstructor
 @AllArgsConstructor
 public class BeatmapObject {
-	
+
 	private static final int ID_LENGTH = 16;
 
-	@Builder.ObtainVia(method = "generateId")
-	private String id;
+	@Builder.Default
+	private String id = generateId();
 
 	@JsonProperty("p")
 	private String parentId;
@@ -62,6 +63,7 @@ public class BeatmapObject {
 	private Type type;
 
 	public enum AutokillType {
+		@Deprecated
 		NO_AUTOKILL, LAST_KF, LAST_KF_OFFSET, FIXED_TIME, SONG_TIME;
 	}
 
@@ -78,29 +80,23 @@ public class BeatmapObject {
 	private String text;
 
 	@JsonProperty("o")
-	@Builder.ObtainVia(method = "copyOrigin")
 	private Point origin;
 
 	@JsonProperty("ed")
-	@Builder.ObtainVia(method = "copyEditorData")
 	private EditorData editorData;
 
-	@Builder.ObtainVia(method = "copyEvents")
 	private Events events;
 
-	private String generateId() {
+	private static String generateId() {
 		return RandomStringUtils.randomAscii(ID_LENGTH);
 	}
-	
-	private Point copyOrigin() {
-		return origin == null ? null : origin.toBuilder().build();
-	}
 
-	private EditorData copyEditorData() {
-		return editorData == null ? null : editorData.toBuilder().build();
-	}
-
-	private Events copyEvents() {
-		return events.toBuilder().build();
+	public BeatmapObject copy() {
+		return toBuilder()
+				.id(generateId())
+				.origin(origin == null ? null : origin.toBuilder().build())
+				.editorData(editorData == null ? null : editorData.toBuilder().build())
+				.events(events.toBuilder().build())
+				.build();
 	}
 }

@@ -20,36 +20,35 @@ import rinchiro.pa.model.object.Events;
 @Slf4j
 public class ObjectSpacer implements ObjectTransformer {
 
-	private final int maxObjectGroupSize;
+	private final int maxAllowedGroupSize;
 	private final BigDecimal step;
 
 	public ObjectSpacer() {
-		this(20, new BigDecimal("0.005"));
+		this(1, new BigDecimal("0.01"));
 	}
 
 	public ObjectSpacer(int maxObjectGroupSize, BigDecimal step) {
-		this.maxObjectGroupSize = maxObjectGroupSize;
+		if (maxObjectGroupSize < 2) {
+			throw new IllegalArgumentException("maxAllowedGroupSize must be at least 1");
+		}
+		this.maxAllowedGroupSize = maxObjectGroupSize;
 		this.step = step;
 	}
 
 	public List<BeatmapObject> transform(List<BeatmapObject> objects) {
 		Map<BigDecimal, List<BeatmapObject>> timeToObjects = objects.stream().collect(Collectors.groupingBy(
-				obj -> obj.getStartTime().setScale(3, RoundingMode.HALF_UP), LinkedHashMap::new, Collectors.toList()));
+				obj -> obj.getStartTime().setScale(2, RoundingMode.HALF_UP), LinkedHashMap::new, Collectors.toList()));
 
 		List<BeatmapObject> newObjects = new ArrayList<>(objects.size());
 
 		for (BigDecimal time : timeToObjects.keySet()) {
-			Map<Boolean, List<BeatmapObject>> emptyToObjects = timeToObjects.get(time).stream()
-					.collect(Collectors.groupingBy(obj -> obj.getType() == BeatmapObject.Type.EMPTY));
-			for (boolean isEmpty : emptyToObjects.keySet()) {
-				List<BeatmapObject> objectsGroup = emptyToObjects.get(isEmpty);
-				if (!isEmpty && objectsGroup.size() >= maxObjectGroupSize
-						&& time.compareTo(step.multiply(BigDecimal.valueOf(objectsGroup.size()))) >= 0) {
-					log.info("spacing out {} objects at {}", objectsGroup.size(), time);
-					newObjects.addAll(spaceOut(time, objectsGroup));
-				} else {
-					newObjects.addAll(objectsGroup);
-				}
+			List<BeatmapObject> objectsGroup = timeToObjects.get(time);
+			if (objectsGroup.size() > maxAllowedGroupSize
+					&& time.compareTo(step.multiply(BigDecimal.valueOf(objectsGroup.size()))) >= 0) {
+				log.info("spacing out {} objects at {}", objectsGroup.size(), time);
+				newObjects.addAll(spaceOut(time, objectsGroup));
+			} else {
+				newObjects.addAll(objectsGroup);
 			}
 		}
 
@@ -61,107 +60,118 @@ public class ObjectSpacer implements ObjectTransformer {
 		int sum = objects.size() + 2 * i - 1;
 
 		for (BeatmapObject obj : objects) {
-			log.trace("object {}", obj.getName());
 			BigDecimal preInterval = step.multiply(BigDecimal.valueOf(i));
 			BigDecimal postInterval = step.multiply(BigDecimal.valueOf(sum - i));
-
-			AutokillType autokillType = obj.getAutokillType();
-			BigDecimal autokillOffset = autokillType == AutokillType.LAST_KF ? BigDecimal.ZERO : obj.getAutokillOffset();
-
-			BigDecimal fixedTimeOffset = BigDecimal.ZERO;
-			switch (autokillType) {
-			case LAST_KF:
-			case LAST_KF_OFFSET:
-				fixedTimeOffset = obj.getEvents().streamKeyframes()
-						.map(KeyframeBase::getTime)
-						.max(BigDecimal::compareTo)
-						.orElse(BigDecimal.ZERO)
-						.add(autokillOffset);
-				break;
-			case FIXED_TIME:
-				fixedTimeOffset = autokillOffset;
-				break;
-			case SONG_TIME:
-				fixedTimeOffset = autokillOffset.add(obj.getStartTime().negate()).max(BigDecimal.ZERO);
-				break;
-			case NO_AUTOKILL:
-				// 10 minutes should be enough for any sensible level
-				// and autokill is deprecated anyway
-				log.warn("You have a No Autokill object {} at {}", obj.getName(), obj.getStartTime());
-				fixedTimeOffset = BigDecimal.valueOf(600);
-				break;
-			}
-
-			Events events = obj.getEvents();
-			for (Events.Type type : Events.Type.values()) {
-				@SuppressWarnings("unchecked")
-				List<KeyframeBase> keyframes = (List<KeyframeBase>) events.getKeyframes(type);
-
-				// shift first keyframe
-				KeyframeBase firstKeyframe = keyframes.get(0);
-				firstKeyframe.setTime(preInterval);
-				firstKeyframe.setEaseType(EaseType.Instant);
-
-				// shift all other keyframes
-				keyframes.stream()
-						.skip(1)
-						.forEach(keyframe -> {
-							keyframe.setTime(keyframe.getTime().add(preInterval));
-						});
-
-				if (type == Events.Type.SCALE) {
-					// set zero scale kf before autokill happens so that object will be killed later
-					if (autokillType != AutokillType.NO_AUTOKILL && fixedTimeOffset.compareTo(BigDecimal.ZERO) > 0) {
-						BigDecimal lastKeyframeTime = keyframes.stream()
-								.map(KeyframeBase::getTime)
-								.max(BigDecimal::compareTo)
-								.orElse(BigDecimal.ZERO)
-								.add(preInterval);
-
-						Keyframe2D lastKeyframe = new Keyframe2D();
-						lastKeyframe.setTime(fixedTimeOffset.max(lastKeyframeTime.add(new BigDecimal("0.001"))));
-						lastKeyframe.setEaseType(EaseType.Instant);
-						keyframes.add(lastKeyframe);
-					}
-				}
-
-				// add new first keyframe
-				switch (type) {
-				case POSITION:
-				case COLOR:
-					KeyframeBase newFirstKeyframe = firstKeyframe.copy();
-					newFirstKeyframe.setTime(BigDecimal.ZERO);
-					newFirstKeyframe.setEaseType(null);
-					keyframes.add(0, newFirstKeyframe);
-					break;
-				case SCALE:
-					keyframes.add(0, new Keyframe2D());
-					break;
-				case ROTATION:
-					keyframes.add(0, new Keyframe1D());
-					break;
-				}
-			}
-
-			obj.setStartTime(time.add(preInterval.negate()));
-
-			if (fixedTimeOffset.compareTo(BigDecimal.ZERO) <= 0) {
-				obj.setAutokillType(AutokillType.LAST_KF);
-				obj.setAutokillOffset(BigDecimal.ZERO);
-			} else if (autokillType != AutokillType.NO_AUTOKILL) {
-				if (autokillType == AutokillType.LAST_KF) {
-					obj.setAutokillType(AutokillType.LAST_KF_OFFSET);
-				}
-
-				BigDecimal newAko = autokillOffset.add(postInterval);
-				if (autokillType == AutokillType.FIXED_TIME) {
-					newAko = newAko.add(preInterval);
-				}
-				obj.setAutokillOffset(newAko);
-			}
-
+			shift(obj, preInterval, postInterval);
 			i += 1;
 		}
+
 		return objects;
+	}
+
+	/**
+	 * shifts objects spawn and kill time,
+	 * while retaining absolute time for its keyframes
+	 */
+	private void shift(BeatmapObject obj, BigDecimal preSpawnInterval, BigDecimal postKillInterval) {
+		log.trace("object {}", obj.getName());
+
+		AutokillType autokillType = obj.getAutokillType();
+		BigDecimal autokillOffset = autokillType == AutokillType.LAST_KF ? BigDecimal.ZERO : obj.getAutokillOffset();
+
+		BigDecimal fixedTimeOffset = BigDecimal.ZERO;
+		switch (autokillType) {
+		case LAST_KF:
+		case LAST_KF_OFFSET:
+			fixedTimeOffset = obj.getEvents().streamKeyframes()
+					.map(KeyframeBase::getTime)
+					.max(BigDecimal::compareTo)
+					.orElse(BigDecimal.ZERO)
+					.add(autokillOffset);
+			break;
+		case FIXED_TIME:
+			fixedTimeOffset = autokillOffset;
+			break;
+		case SONG_TIME:
+			fixedTimeOffset = autokillOffset.add(obj.getStartTime().negate()).max(BigDecimal.ZERO);
+			break;
+		case NO_AUTOKILL:
+			// 10 minutes should be enough for any sensible level
+			// and autokill is deprecated anyway
+			log.warn("You have a No Autokill object {} at {}", obj.getName(), obj.getStartTime());
+			fixedTimeOffset = BigDecimal.valueOf(600);
+			break;
+		}
+
+		Events events = obj.getEvents();
+		for (Events.Type type : Events.Type.values()) {
+			@SuppressWarnings("unchecked")
+			List<KeyframeBase> keyframes = (List<KeyframeBase>) events.getKeyframes(type);
+
+			// shift all keyframes except first
+			keyframes.stream()
+					.skip(1)
+					.forEach(keyframe -> {
+						keyframe.setTime(keyframe.getTime().add(preSpawnInterval));
+					});
+
+			KeyframeBase zeroKeyframe = keyframes.get(0);
+
+			// add new first keyframe
+			KeyframeBase firstKeyframe = null;
+			switch (type) {
+			case POSITION:
+			case SCALE:
+			case COLOR:
+				firstKeyframe = zeroKeyframe.copy();
+				break;
+			case ROTATION:
+				firstKeyframe = new Keyframe1D();
+				break;
+			}
+
+			firstKeyframe.setTime(preSpawnInterval);
+			firstKeyframe.setEaseType(EaseType.Instant);
+			keyframes.add(1, firstKeyframe);
+
+			// adjust scale for non-empty objects so they'll only be visible at the same
+			// period as before
+			if (obj.getType() != BeatmapObject.Type.EMPTY && type == Events.Type.SCALE) {
+				Keyframe2D scaleKeyframe = (Keyframe2D) zeroKeyframe;
+				scaleKeyframe.setX(BigDecimal.ZERO);
+				scaleKeyframe.setY(BigDecimal.ZERO);
+
+				// set zero scale kf at the time of previous autokill
+				if (autokillType != AutokillType.NO_AUTOKILL && fixedTimeOffset.compareTo(BigDecimal.ZERO) > 0) {
+					BigDecimal lastKeyframeTime = keyframes.stream()
+							.map(KeyframeBase::getTime)
+							.max(BigDecimal::compareTo)
+							.orElse(BigDecimal.ZERO)
+							.add(preSpawnInterval);
+
+					Keyframe2D lastKeyframe = new Keyframe2D();
+					lastKeyframe.setTime(fixedTimeOffset.max(lastKeyframeTime.add(new BigDecimal("0.001"))));
+					lastKeyframe.setEaseType(EaseType.Instant);
+					keyframes.add(lastKeyframe);
+				}
+			}
+		}
+
+		obj.setStartTime(obj.getStartTime().add(preSpawnInterval.negate()));
+
+		if (obj.getType() == BeatmapObject.Type.EMPTY || fixedTimeOffset.compareTo(BigDecimal.ZERO) <= 0) {
+			obj.setAutokillType(AutokillType.LAST_KF);
+			obj.setAutokillOffset(BigDecimal.ZERO);
+		} else if (autokillType != AutokillType.NO_AUTOKILL) {
+			if (autokillType == AutokillType.LAST_KF) {
+				obj.setAutokillType(AutokillType.LAST_KF_OFFSET);
+			}
+
+			BigDecimal newAko = autokillOffset.add(postKillInterval);
+			if (autokillType == AutokillType.FIXED_TIME) {
+				newAko = newAko.add(preSpawnInterval);
+			}
+			obj.setAutokillOffset(newAko);
+		}
 	}
 }

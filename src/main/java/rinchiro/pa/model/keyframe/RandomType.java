@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum RandomType {
 
-	NONE, RANGE, UNKNOWN, TOGGLE, SCALE;
+	NONE, RANGE, @Deprecated SNAP, TOGGLE, SCALE;
 
 	@Override
 	@JsonValue
