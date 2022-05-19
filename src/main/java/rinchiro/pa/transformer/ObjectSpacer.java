@@ -44,7 +44,7 @@ public class ObjectSpacer implements ObjectTransformer {
 		for (BigDecimal time : timeToObjects.keySet()) {
 			List<BeatmapObject> objectsGroup = timeToObjects.get(time);
 			if (objectsGroup.size() > maxAllowedGroupSize
-					&& time.compareTo(step.multiply(BigDecimal.valueOf(objectsGroup.size()))) >= 0) {
+					&& time.compareTo(step.multiply(BigDecimal.valueOf(objectsGroup.size() + 2))) >= 0) {
 				log.info("spacing out {} objects at {}", objectsGroup.size(), time);
 				newObjects.addAll(spaceOut(time, objectsGroup));
 			} else {
