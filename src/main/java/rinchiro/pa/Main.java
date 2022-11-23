@@ -10,7 +10,7 @@ public class Main {
 
 	public static void main(String... args) {
 		ObjectSpacer spacer = args.length < 3 ? new ObjectSpacer()
-				: new ObjectSpacer(Integer.valueOf(args[1]), new BigDecimal(args[2]));
+				: new ObjectSpacer(Integer.parseInt(args[1]), new BigDecimal(args[2]));
 
 		Level level = new Level(args[0]);
 		level.read();

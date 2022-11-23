@@ -28,7 +28,7 @@ public class ObjectSpacer implements ObjectTransformer {
 	}
 
 	public ObjectSpacer(int maxObjectGroupSize, BigDecimal step) {
-		if (maxObjectGroupSize < 2) {
+		if (maxObjectGroupSize < 1) {
 			throw new IllegalArgumentException("maxAllowedGroupSize must be at least 1");
 		}
 		this.maxAllowedGroupSize = maxObjectGroupSize;

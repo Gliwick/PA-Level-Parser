@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class EditorData {
-	
+
 	private Boolean shrink;
 	
 	@JsonFormat(shape = Shape.STRING)
@@ -21,4 +21,6 @@ public class EditorData {
 	
 	@JsonFormat(shape = Shape.STRING)
 	private Integer layer;
+
+	private Boolean locked;
 }
