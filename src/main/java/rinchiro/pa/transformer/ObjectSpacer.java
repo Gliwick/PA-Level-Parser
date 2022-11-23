@@ -15,7 +15,7 @@ import rinchiro.pa.model.keyframe.KeyframeBase;
 import rinchiro.pa.model.keyframe.KeyframeBase.EaseType;
 import rinchiro.pa.model.object.BeatmapObject;
 import rinchiro.pa.model.object.BeatmapObject.AutokillType;
-import rinchiro.pa.model.object.Events;
+import rinchiro.pa.model.object.ObjectEvents;
 
 @Slf4j
 public class ObjectSpacer implements ObjectTransformer {
@@ -103,8 +103,8 @@ public class ObjectSpacer implements ObjectTransformer {
 			break;
 		}
 
-		Events events = obj.getEvents();
-		for (Events.Type type : Events.Type.values()) {
+		ObjectEvents events = obj.getEvents();
+		for (ObjectEvents.Type type : ObjectEvents.Type.values()) {
 			@SuppressWarnings("unchecked")
 			List<KeyframeBase> keyframes = (List<KeyframeBase>) events.getKeyframes(type);
 
@@ -136,7 +136,7 @@ public class ObjectSpacer implements ObjectTransformer {
 
 			// adjust scale for non-empty objects so they'll only be visible at the same
 			// period as before
-			if (obj.getType() != BeatmapObject.Type.EMPTY && type == Events.Type.SCALE) {
+			if (obj.getType() != BeatmapObject.Type.EMPTY && type == ObjectEvents.Type.SCALE) {
 				Keyframe2D scaleKeyframe = (Keyframe2D) zeroKeyframe;
 				scaleKeyframe.setX(BigDecimal.ZERO);
 				scaleKeyframe.setY(BigDecimal.ZERO);

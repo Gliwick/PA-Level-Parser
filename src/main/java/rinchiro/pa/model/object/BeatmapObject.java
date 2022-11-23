@@ -83,9 +83,9 @@ public class BeatmapObject {
 	private Point origin;
 
 	@JsonProperty("ed")
-	private EditorData editorData;
+	private ObjectEditorData editorData;
 
-	private Events events;
+	private ObjectEvents events;
 
 	private static String generateId() {
 		return RandomStringUtils.randomAscii(ID_LENGTH);

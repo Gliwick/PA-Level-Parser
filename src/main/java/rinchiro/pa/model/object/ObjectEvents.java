@@ -19,7 +19,7 @@ import rinchiro.pa.model.keyframe.KeyframeBase;
 @Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class Events {
+public class ObjectEvents {
 
 	@JsonProperty("pos")
 	@Builder.ObtainVia(method = "copyPosition")

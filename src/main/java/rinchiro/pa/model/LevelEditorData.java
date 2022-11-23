@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class EditorData {
+public class LevelEditorData {
 
 	@JsonProperty("timeline_pos")
 	@Builder.Default

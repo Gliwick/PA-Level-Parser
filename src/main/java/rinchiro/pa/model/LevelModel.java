@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class LevelData {
+public class LevelModel {
 
 	@JsonProperty("level_version")
 	private String levelVersion;

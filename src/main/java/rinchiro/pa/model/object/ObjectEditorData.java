@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class EditorData {
+public class ObjectEditorData {
 
 	private Boolean shrink;
 	

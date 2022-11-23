@@ -21,13 +21,13 @@ import rinchiro.pa.model.object.PrefabObject;
 public class LevelDescription {
 
 	@JsonProperty("ed")
-	private EditorData editorData;
+	private LevelEditorData editorData;
 	
 	@JsonProperty("prefab_objects")
 	private List<PrefabObject> prefabObjects;
 	
 	@JsonProperty("level_data")
-	private LevelData levelData;
+	private LevelModel levelData;
 	
 	@JsonInclude(Include.NON_EMPTY)
 	@Builder.Default
@@ -43,5 +43,5 @@ public class LevelDescription {
 	@JsonProperty("bg_objects")
 	private List<BackgroundObject> backgroundObjects;
 	
-	private Events events;
+	private LevelEvents events;
 }

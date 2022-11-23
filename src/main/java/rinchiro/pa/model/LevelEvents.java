@@ -18,7 +18,7 @@ import rinchiro.pa.model.keyframe.VignetteKeyframe;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Events {
+public class LevelEvents {
 
 	@JsonProperty("pos")
 	private List<Keyframe2D> position;

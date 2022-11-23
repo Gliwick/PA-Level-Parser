@@ -27,7 +27,7 @@ public class PrefabObject {
 	private BigDecimal startTime;
 	
 	@JsonProperty("ed")
-	private EditorData editorData;
+	private ObjectEditorData editorData;
 	
 	@JsonProperty("e")
 	private PrefabEvents events;
